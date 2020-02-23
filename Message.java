@@ -1,0 +1,11 @@
+
+public enum Message 
+{
+	WORKING,
+	PREPARED,
+	COMMITTED,
+	ABORTED,
+	PREPARE,
+	COMMIT,
+	ABORT;
+}
