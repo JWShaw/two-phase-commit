@@ -3,40 +3,69 @@ import java.io.*;
 
 public class RM implements Runnable
 {
-	private Socket sock;
 	private InetAddress host;
-	private ObjectOutputStream oos;
-	private ObjectInputStream ois;
+	private int id;
+	private State st;
 	
+	private int destinationPort;
+	private Socket sock;
+	private ObjectInputStream ois;
+	private ObjectOutputStream oos;
+	
+	/**
+	 * 
+	 * @param x
+	 * @param id
+	 */
+	public RM(int id, int port)
+	{
+		this.id = id;
+		this.destinationPort = port;
+		
+		try
+		{
+			host = InetAddress.getLocalHost();
+		}
+		catch(UnknownHostException uhe)
+		{
+			uhe.printStackTrace();
+		}
+	}
+	
+	/**
+	 * 
+	 */
 	@Override
 	public void run() 
 	{
 		try
 		{
-			host = InetAddress.getLocalHost();
-			sock = new Socket(host.getHostName(), 5050);
+			sock = new Socket(host.getHostName(), destinationPort);
 			oos = new ObjectOutputStream(sock.getOutputStream());
 			ois = new ObjectInputStream(sock.getInputStream());
 			
-			for (int i = 0; i < 5; i++)
-			{
-				System.out.println("(client) Sending request to Socket Server");
-				oos.writeObject("" + i);
-				
-				Thread.sleep(500);
-				
-				String message = (String) ois.readObject();
-				System.out.println("(client) Server says: " + message);
-			}
-			
-			oos.writeObject("Exit");
-			ois.close();
-			oos.close();
+			changeState(State.WORKING);
 		}
-		catch (Exception e)
+		catch (IOException ioe)
 		{
-			System.out.print("(client) Something's gone wrong! (RM)");
-			System.exit(0);
+			ioe.printStackTrace();
 		}
+		finally
+		{
+			try 
+			{
+				oos.close();
+				ois.close();
+				sock.close();
+			}
+			catch (Exception e)
+			{ ; }
+		}
+	}
+	
+	private void changeState(State s)
+	{
+		this.st = s;
+		System.out.printf("(RM%d): State = %s%n", id, st);
 	}
 }

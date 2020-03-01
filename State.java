@@ -1,4 +1,10 @@
 
-public enum State {
-
+public enum State 
+{
+	INITIALIZING,
+	WORKING,
+	PREPARED,
+	PREPARING,
+	COMMITTED,
+	ABORTED;
 }
