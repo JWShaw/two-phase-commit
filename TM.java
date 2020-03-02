@@ -1,123 +1,217 @@
 import java.net.*;
 import java.io.*;
 import java.util.ArrayList;
+import java.util.concurrent.LinkedBlockingQueue;
 
 public class TM implements Runnable 
 {
-	private State st;
-	private final int port;
+	private PState st;
 	private int capacity;
 	private ServerSocket server;
 	
-	private ArrayList<Socket> clientSocks;
-	private ArrayList<ObjectInputStream> clientIn;
-	private ArrayList<ObjectOutputStream> clientOut;
+	private ArrayList<ClientConnection> clients;
+	private LinkedBlockingQueue<Message> msgQueue;
 	
 	/**
 	 * Constructor for the transaction manager.
 	 * @param port The port on which the TM is to listen.
 	 * @param capacity The number of RMs that the TM should manage
 	 */
-	public TM(int port, int capacity)
+	public TM(int port, int capacity) throws IOException
 	{
-		this.port = port;
 		this.capacity = capacity;
-		
-		this.clientSocks = new ArrayList<>(capacity);
-		this.clientIn = new ArrayList<>(capacity);
-		this.clientOut = new ArrayList<>(capacity);
-		
-		try
-		{
-			this.server = new ServerSocket(port);
-		}
-		catch (IOException ioe)
-		{
-			ioe.printStackTrace();
-		}
+		clients = new ArrayList<>(capacity);
+		msgQueue = new LinkedBlockingQueue<>();
+		this.server = new ServerSocket(port);
 	}
 	
+	/**
+	 * Runs on its own thread; implements the bulk of the algorithm.
+	 * The content of this method will later be split into more methods,
+	 * which will be called here.
+	 */
 	@Override
 	public void run() 
 	{
 		try 
 		{
-			changeState(State.INITIALIZING);
 			openConnections();
-			changeState(State.WORKING);
-			
-			// Listen for "Committed" message.
-			while (st == State.WORKING)
+
+			while (st == PState.WORKING)
 			{
-				for (ObjectInputStream ois : clientIn)
+				Message m = null;
+
+				try 
 				{
-					Message msg = (Message) ois.readObject();
-					if (msg == Message.PREPARED)
-					{
-						changeState(State.PREPARING);
-					};
+					m = msgQueue.take();
+				}
+				catch (NullPointerException npe)
+				{
+					;
+				}
+				
+				if (m == Message.PREPARED)
+				{
+					changeState(PState.PREPARED);
 				}
 			}
-			broadcast(Message.PREPARE);		
+			
+			// Phase 1 of the algorithm: Get all 
+			if (st == PState.PREPARED)
+			{
+				int preparedRMs = 0;
+				broadcast(Message.PREPARE);
+				
+				while (preparedRMs < capacity)
+				{
+					Message m = null;
+					
+					try 
+					{
+						m = msgQueue.take();
+					}
+					catch (NullPointerException npe)
+					{
+						;
+					}
+					
+					if (m == Message.PREPARED)
+					{
+						preparedRMs++;
+					}
+					else if (m == Message.ABORTED)
+					{
+						changeState(PState.ABORTED);
+						broadcast(Message.ABORT);
+						break;
+					}
+				}
+				
+				// Phase 2
+				if (preparedRMs == capacity)
+				{
+					System.out.println("(TM): All RMs prepared.  Committing...");
+					changeState(PState.COMMITTED);
+					broadcast(Message.COMMIT);
+				}
+			}
 		}
-		catch (Exception e) // Gotta catch 'em all! (Better exception handling to be added later.)
+		catch (Exception e)
 		{
-			System.err.println("(TM): Something's gone wrong!");
 			e.printStackTrace();
 		}
-		finally		// Connections are closed.
+		finally
 		{
-			System.out.println("(TM): closing connections");
-			closeConnections();
+			// All connections are closed; all threads terminated.
+			System.out.println("(TM): Closing all connections.");
+			for (ClientConnection c : clients)
+			{
+				try
+				{
+					c.close();
+				}
+				catch (Exception e)
+				{ }
+			}
 		}
-
 	}
 	
 	/**
 	 * Opens connections between the TM and the expected number of RMs.
 	 * @throws IOException
 	 */
-	private void openConnections() throws IOException
+	private synchronized void openConnections() throws IOException
 	{
-		System.out.println("(TM): Waiting for clients to connect...");
-		while(clientSocks.size() < capacity)
+		changeState(PState.INITIALIZING);
+		System.out.printf("(TM): Waiting for clients to connect.%n");
+		
+		while (clients.size() < capacity)
 		{
-			Socket client = server.accept();
-			clientSocks.add(client);
-			clientIn.add(new ObjectInputStream(client.getInputStream()));
-			clientOut.add(new ObjectOutputStream(client.getOutputStream()));
-			System.out.printf("(TM): Client [%d/%d] connected.%n", clientSocks.size(), capacity);
+			ClientConnection newCon = new ClientConnection(server.accept());
+			clients.add(newCon);
+			System.out.printf("(TM): Client (%d/%d) connected.%n", 
+					clients.size(), capacity);
 		}
+		changeState(PState.WORKING);
 	}
 	
-	private void changeState(State s)
+	// Changes the state of the TM.
+	private synchronized void changeState(PState s)
 	{
 		this.st = s;
 		System.out.println("(TM): State = " + this.st);
 	}
 	
-	private void broadcast(Message m) throws IOException
+	// Broadcasts a given message to all connected RMs.
+	private synchronized void broadcast(Message m) throws IOException
 	{
-		for (ObjectOutputStream oos : clientOut)
+		System.out.printf("(TM): Broadcasting message %s to all RMs%n", m);
+		for (ClientConnection c : clients)
 		{
-			oos.writeObject(m);
+			c.send(m);
 		}
 	}
 	
-	private void closeConnections()
+	// Inner class to represent a connection to a RM
+	class ClientConnection
 	{
-		try
+		Socket sock;
+		ObjectInputStream ois;
+		ObjectOutputStream oos;
+		boolean isOpen;
+		
+		ClientConnection(Socket sock) throws IOException
 		{
-			for (ObjectInputStream ois : clientIn)
-				ois.close();
-			for (ObjectOutputStream oos : clientOut)
-				oos.close();
-			for (Socket s : clientSocks)
-				s.close();
-		}
-		catch (Exception e)
-		{
+			this.sock = sock;
+			ois = new ObjectInputStream(sock.getInputStream());
+			oos = new ObjectOutputStream(sock.getOutputStream());
+			isOpen = true;
 			
+			/* A new thread listens for messages from the RM; 
+			 * directs them to the message queue
+			 */
+			Thread listener = new Thread()
+			{
+				public void run()
+				{
+					while(isOpen)
+					{
+						try
+						{
+							Message m = (Message) ois.readObject();
+							msgQueue.put(m);
+						}
+						catch (EOFException eof) {;}
+						catch (SocketException se)
+						{
+							return;
+						}
+						catch (Exception e)
+						{
+							e.printStackTrace();
+						}
+					}
+				}
+			};
+			
+			// setDaemon(true): ensures that this thread doesn't keep the JVM running
+			listener.setDaemon(true);
+			listener.start();
+		}
+		
+		// Sends a message to the connected RM
+		void send(Message m) throws IOException
+		{
+			oos.writeObject(m);
+		}
+		
+		// Closes this connection
+		void close() throws IOException
+		{
+			isOpen = false;
+			ois.close();
+			oos.close();
+			sock.close();
 		}
 	}
 }

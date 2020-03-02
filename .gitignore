@@ -3,3 +3,8 @@
 /RM.class
 /State.class
 /TM.class
+/RMChild.class
+/ClientConnection.class
+/TM$ClientConnection.class
+/TM$ClientConnection$1.class
+/PState.class

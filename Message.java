@@ -1,10 +1,11 @@
 
 public enum Message 
 {
-	PREPARE,
-	COMMIT,
+	PREPARE,	// TM -> RM messages
+	COMMIT,		
 	ABORT,
-	PREPARED,
+	
+	PREPARED,	// RM -> RM messages
 	COMMITTED,
 	ABORTED;
 }
