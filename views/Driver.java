@@ -12,7 +12,7 @@ public class Driver {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
-					MainWindow frame = new MainWindow();
+					MainWindow frame = new MainWindow(new CtrlPanelView(), new GraphicalView());
 					frame.setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();
