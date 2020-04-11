@@ -174,4 +174,9 @@ public class CtrlPanelView extends JPanel
 		gbc_logArea.gridy = 8;
 		this.add(logArea, gbc_logArea);
 	}
+	
+	public void increaseWorkingCt()
+	{
+		workingCount.setText("bob");
+	}
 }

@@ -1,15 +1,12 @@
 package views;
 
 import java.awt.Color;
-import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.Rectangle;
 import java.awt.geom.Ellipse2D;
-
-import javax.swing.JComponent;
 
 public class RMView
 {
+	final int RADIUS = 32;
 	private int xPos;
 	private int yPos;
 	private Color c;

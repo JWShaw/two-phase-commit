@@ -9,13 +9,14 @@ import javax.swing.JPanel;
 
 public class GraphicalView extends JPanel
 {
-	private ArrayList<RMView> RMViews;
-	//private TMView TMview;
+	private ArrayList<RMView> rm_views;
+	private RMView tm_view;
 	
 	public GraphicalView()
 	{
 		this.setBackground(Color.WHITE);
-		RMViews = new ArrayList<>();
+		rm_views = new ArrayList<>();
+		tm_view = new RMView();
 	}
 	
 	@Override
@@ -24,15 +25,21 @@ public class GraphicalView extends JPanel
 		Graphics2D g2 = (Graphics2D) g;
 		super.paintComponent(g2);
 		
-		// Paint ALL RMViews in the list
-		RMView vew = new RMView();
-		vew.setPosition(100, 100);
-		vew.setColor(Color.green);
-		vew.draw(g2);
+		// Paint ALL RMViews in the list (draw them in a circle)
+		tm_view.setPosition((getWidth() - tm_view.RADIUS) / 2,
+				(getHeight() - tm_view.RADIUS) / 2);
+		tm_view.draw(g2);
+		
+		// Paint ALL RMViews in the list (draw them in a circle)
+//		RMView vew = new RMView();
+//		vew.setPosition(100, 100);
+//		vew.setColor(Color.green);
+//		vew.draw(g2);
 	}
 	
 	public void addRMView(RMView v)
 	{
-		RMViews.add(v);
+		rm_views.add(v);
+		repaint();
 	}
 }

@@ -9,15 +9,21 @@ public class Driver {
 	 */
 	public static void main(String[] args) 
 	{
+		CtrlPanelView cp = new CtrlPanelView();
+		GraphicalView gv = new GraphicalView();
+		
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
-					MainWindow frame = new MainWindow(new CtrlPanelView(), new GraphicalView());
+					MainWindow frame = new MainWindow(cp, gv);
 					frame.setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
 			}
 		});
+		
+		
+		
 	}
 }
