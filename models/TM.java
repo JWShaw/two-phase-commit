@@ -1,3 +1,4 @@
+package models;
 import java.net.*;
 import java.io.*;
 import java.util.ArrayList;
@@ -6,6 +7,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 public class TM implements Runnable 
 {
 	private PState st;
+	private int port;
 	private int capacity;
 	private ServerSocket server;
 	
@@ -20,9 +22,15 @@ public class TM implements Runnable
 	public TM(int port, int capacity) throws IOException
 	{
 		this.capacity = capacity;
+		this.port = port;
 		clients = new ArrayList<>(capacity);
 		msgQueue = new LinkedBlockingQueue<>();
 		this.server = new ServerSocket(port);
+	}
+	
+	public int getPort()
+	{
+		return port;
 	}
 	
 	/**
