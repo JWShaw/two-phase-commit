@@ -13,6 +13,7 @@ import javax.swing.JPanel;
 import javax.swing.JSpinner;
 import javax.swing.JTextArea;
 import javax.swing.JTextPane;
+import javax.swing.event.ChangeListener;
 
 public class CtrlPanelView extends JPanel
 {
@@ -196,8 +197,18 @@ public class CtrlPanelView extends JPanel
 		preparedCount.setText(Integer.toString(acount));
 	}
 	
+	public int getRMSpinner()
+	{
+		return (int) rmSpinner.getValue();
+	}
+	
 	public void addNewButtonListener(ActionListener al)
 	{
 		btnNewButton.addActionListener(al);
+	}
+	
+	public void addSpinnerChangeListener(ChangeListener cl)
+	{
+		rmSpinner.addChangeListener(cl);
 	}
 }

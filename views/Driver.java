@@ -5,6 +5,9 @@ import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+
 public class Driver 
 {
 
@@ -32,10 +35,27 @@ public class Driver
 			@Override
 			public void actionPerformed(ActionEvent e) 
 			{
-				gv.addRMView(new RMView(Color.GREEN));
+				//Put something here
+			}
+		}
+		
+		class SpinnerListener implements ChangeListener
+		{
+			public void stateChanged(ChangeEvent e)
+			{
+				if (cp.getRMSpinner() > gv.numRMViews())
+				{
+					gv.addRMView(new RMView());
+				}
+				else
+				{
+					gv.removeRMView();
+				}
+				
 			}
 		}
 
 		cp.addNewButtonListener(new NewButtonListener());
+		cp.addSpinnerChangeListener(new SpinnerListener());
 	}
 }

@@ -47,4 +47,15 @@ public class GraphicalView extends JPanel
 		rm_views.add(v);
 		repaint();
 	}
+	
+	public void removeRMView()
+	{
+		rm_views.remove(rm_views.size() - 1);
+		repaint();
+	}
+	
+	public int numRMViews()
+	{
+		return rm_views.size();
+	}
 }
