@@ -5,6 +5,7 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.SystemColor;
+import java.awt.event.ActionListener;
 
 import javax.swing.Box;
 import javax.swing.JButton;
@@ -174,9 +175,29 @@ public class CtrlPanelView extends JPanel
 		gbc_logArea.gridy = 8;
 		this.add(logArea, gbc_logArea);
 	}
-	
-	public void increaseWorkingCt()
+
+	public void setWorkingCount(int wcount)
 	{
-		workingCount.setText("bob");
+		workingCount.setText(Integer.toString(wcount));
+	}
+	
+	public void setPreparedCount(int pcount)
+	{
+		preparedCount.setText(Integer.toString(pcount));
+	}
+	
+	public void setCommittedCount(int ccount)
+	{
+		preparedCount.setText(Integer.toString(ccount));
+	}
+	
+	public void setAbortedCount(int acount)
+	{
+		preparedCount.setText(Integer.toString(acount));
+	}
+	
+	public void addNewButtonListener(ActionListener al)
+	{
+		btnNewButton.addActionListener(al);
 	}
 }

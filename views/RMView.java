@@ -17,10 +17,27 @@ public class RMView
 		yPos = 0;
 	}
 	
+	public RMView(Color col)
+	{
+		c = col;
+		xPos = 0;
+		yPos = 0;
+	}
+	
 	public void setPosition(int x, int y)
 	{
 		xPos = x;
 		yPos = y;
+	}
+	
+	public int getXpos()
+	{
+		return xPos;
+	}
+	
+	public int getYpos()
+	{
+		return yPos;
 	}
 	
 	public void setColor(Color col)
