@@ -3,7 +3,6 @@ package models;
 import java.io.IOException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
-
 import views.StateListener;
 
 /**
@@ -15,6 +14,7 @@ public class Simulation {
   private TM theManager;
   private StateListener stl;
   private int numRMs;
+  private double abortProb;
 
   /**
    * Constructor
@@ -23,6 +23,7 @@ public class Simulation {
    */
   public Simulation() throws IOException {
     listofRMs = new ArrayList<>();
+    abortProb = 0;
   }
 
   /**
@@ -31,7 +32,7 @@ public class Simulation {
    * @throws UnknownHostException
    */
   public void addRM() throws UnknownHostException {
-    RM newRM = new RM(numRMs, theManager.getPort());
+    RM newRM = new RM(numRMs, theManager.getPort(), abortProb);
     listofRMs.add(newRM);
     if (stl != null) {
       newRM.addStateListeneer(stl);
@@ -74,6 +75,19 @@ public class Simulation {
    */
   public TM getTM() {
     return theManager;
+  }
+  
+  /**
+   * Sets the probability that any RM will abort when asked to commit
+   * @param prob The aforementioned probability
+   */
+  public void setAbortProb(double prob)
+  {
+    abortProb = prob;
+    for (RM r : listofRMs)
+    {
+      r.setAbortProb(abortProb);
+    }
   }
 
   /**

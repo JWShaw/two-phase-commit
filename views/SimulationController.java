@@ -6,6 +6,9 @@ import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.net.UnknownHostException;
 
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+
 import models.PState;
 import models.Simulation;
 
@@ -136,11 +139,19 @@ public class SimulationController {
         }
       }
     }
+    
+    class ProbChangeListener implements ChangeListener {
+      @Override
+      public void stateChanged(ChangeEvent e) {
+        sim.setAbortProb(cv.getAbortProbSpinnerValue());
+      }
+    }
 
     // Add appropriate listeners to each component
     cv.addNewButtonListener(new NewButtonListener());
     cv.addAddRMButtonListener(new AddRMListener());
     cv.addPrepareButtonListener(new PrepareListener());
+    cv.addProbSpinnerChangeListener(new ProbChangeListener());
     sim.addStateListener(new StateChangeListener());
   }
 
@@ -155,7 +166,7 @@ public class SimulationController {
     case WORKING:
       return Color.blue;
     case PREPARED:
-      return Color.magenta;
+      return Color.pink;
     case COMMITTED:
       return Color.green;
     case ABORTED:
@@ -163,7 +174,7 @@ public class SimulationController {
     case INITIALIZING:
       return Color.cyan;
     case PREPARING:
-      return Color.magenta;
+      return Color.pink;
     default:
       return Color.black;
     }

@@ -2,7 +2,6 @@ package models;
 
 import views.StateEvent;
 import views.StateListener;
-
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -10,12 +9,14 @@ import java.io.ObjectOutputStream;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.util.Random;
 
 public class RM implements Runnable {
   private InetAddress host;
   private int id;
   private PState st;
   private StateListener listener;
+  private double abortProb;
 
   private int destinationPort;
   private Socket sock;
@@ -28,9 +29,10 @@ public class RM implements Runnable {
    * @param id  Identification number
    * @param The port on which the TM is listening
    */
-  public RM(int id, int port) throws UnknownHostException {
+  public RM(int id, int port, double abortProb) throws UnknownHostException {
     this.id = id;
     this.destinationPort = port;
+    this.abortProb = abortProb;
     st = PState.INITIALIZING;
 
     host = InetAddress.getLocalHost();
@@ -107,11 +109,17 @@ public class RM implements Runnable {
    * @throws IOException
    */
   public void prepare() throws IOException {
-    if (st == PState.WORKING || st == PState.PREPARED) {
+    Random r = new Random();
+    double rand = r.nextDouble();
+    
+    if (rand > abortProb)
+    {
       changeState(PState.PREPARED);
       sendMessage(Message.PREPARED);
-    } else {
-      System.err.println("Error: RM" + id + " tried to prepare, " + "but was already committed/aborted!");
+    }
+    else
+    {
+      abort();
     }
   }
 
@@ -146,6 +154,15 @@ public class RM implements Runnable {
    */
   public void addStateListeneer(StateListener l) {
     listener = l;
+  }
+  
+  /**
+   * Sets the probability that the RM will, when asked to prepare, instead abort.
+   * @param prob The aforementioned probability
+   */
+  public void setAbortProb(double prob)
+  {
+    abortProb = prob;
   }
 
   /**

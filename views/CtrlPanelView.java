@@ -6,13 +6,15 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.SystemColor;
 import java.awt.event.ActionListener;
-
 import javax.swing.Box;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JSpinner;
 import javax.swing.JTextArea;
 import javax.swing.JTextPane;
+import javax.swing.SpinnerListModel;
+import javax.swing.event.ChangeListener;
 
 /**
  * One of the two views: the control panel on the left of the user-interface.
@@ -33,6 +35,7 @@ public class CtrlPanelView extends JPanel {
   private int preparedCount;
   private int committedCount;
   private int abortedCount;
+  private JSpinner abortProbSpinner;
 
   /**
    * Builds the view, which is displayed in the main window
@@ -174,15 +177,16 @@ public class CtrlPanelView extends JPanel {
     gbc_txtpnAbortProb.gridx = 0;
     gbc_txtpnAbortProb.gridy = 7;
     this.add(txtpnAbortProb, gbc_txtpnAbortProb);
-
-    abortProbPane = new JTextPane();
-    abortProbPane.setText("0");
-    abortProbPane.setBackground(SystemColor.window);
+    
+    abortProbSpinner = new JSpinner();
+    Object[] options = {0.00, 0.10, 0.20, 0.30, 0.40, 0.50, 0.60, 0.70, 0.80, 0.90, 1.00};
+    SpinnerListModel probabilities = new SpinnerListModel(options);
+    abortProbSpinner.setModel(probabilities);
     GridBagConstraints gbc_AbortProb = new GridBagConstraints();
     gbc_AbortProb.insets = new Insets(0, 0, 5, 0);
     gbc_AbortProb.gridx = 1;
     gbc_AbortProb.gridy = 7;
-    this.add(abortProbPane, gbc_AbortProb);
+    this.add(abortProbSpinner, gbc_AbortProb);
 
     logArea = new JTextArea();
     JScrollPane scroll = new JScrollPane(logArea);
@@ -241,6 +245,10 @@ public class CtrlPanelView extends JPanel {
     abortedCount++;
     abortedCountPane.setText(Integer.toString(abortedCount));
   }
+  
+  public double getAbortProbSpinnerValue() {
+    return Double.valueOf((Double) abortProbSpinner.getValue());
+  }
 
   /**
    * Adds an action listener to the "New Simulation" button
@@ -264,6 +272,14 @@ public class CtrlPanelView extends JPanel {
    */
   public void addPrepareButtonListener(ActionListener al) {
     btnPrepare.addActionListener(al);
+  }
+  
+  /**
+   * Adds a change listener to the "p(abort)" spinner
+   * @param cl the change listener
+   */
+  public void addProbSpinnerChangeListener(ChangeListener cl) {
+    abortProbSpinner.addChangeListener(cl);
   }
 
   /**

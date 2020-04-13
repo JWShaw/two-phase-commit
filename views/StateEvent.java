@@ -1,7 +1,8 @@
 package views;
 
 import java.util.EventObject;
-import models.*;
+import models.PState;
+
 
 /**
  * An event which represents a change in state in an RM or TM
