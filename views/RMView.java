@@ -4,52 +4,77 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.geom.Ellipse2D;
 
-public class RMView
-{
-	final int RADIUS = 32;
-	private int xPos;
-	private int yPos;
-	private Color c;
-	
-	public RMView()
-	{
-		xPos = 0;
-		yPos = 0;
-	}
-	
-	public RMView(Color col)
-	{
-		c = col;
-		xPos = 0;
-		yPos = 0;
-	}
-	
-	public void setPosition(int x, int y)
-	{
-		xPos = x;
-		yPos = y;
-	}
-	
-	public int getXpos()
-	{
-		return xPos;
-	}
-	
-	public int getYpos()
-	{
-		return yPos;
-	}
-	
-	public void setColor(Color col)
-	{
-		c = col;
-	}
-	
-	public void draw(Graphics2D g2)
-	{
-		Ellipse2D.Double fig = new Ellipse2D.Double(xPos, yPos, 32, 32);
-		g2.setColor(c);
-		g2.fill(fig);
-		g2.draw(fig);
-	}
+/**
+ * A graphical representation of an RM (or TM) as a colored circle
+ */
+public class RMView {
+  final int RADIUS = 32;
+  private int xPos;
+  private int yPos;
+  private Color c;
+
+  /**
+   * Constructs a new RMView
+   */
+  public RMView() {
+    xPos = 0;
+    yPos = 0;
+  }
+
+  /**
+   * Constructs a new RMView
+   * 
+   * @param col The desired color of the new RMView
+   */
+  public RMView(Color col) {
+    c = col;
+    xPos = 0;
+    yPos = 0;
+  }
+
+  /**
+   * Sets the onscreen position of the RMView
+   * 
+   * @param x
+   * @param y
+   */
+  public void setPosition(int x, int y) {
+    xPos = x;
+    yPos = y;
+  }
+
+  /**
+   * @return The "x" position of the RMView on the panel
+   */
+  public int getXpos() {
+    return xPos;
+  }
+
+  /**
+   * @return The "y" position of the RMView on the panel
+   */
+  public int getYpos() {
+    return yPos;
+  }
+
+  /**
+   * Sets the color of the RMView
+   * 
+   * @param col The desired color
+   */
+  public void setColor(Color col) {
+    c = col;
+  }
+
+  /**
+   * Draws the RMView
+   * 
+   * @param g2 The graphics2D object with which the RMView is to be drawn
+   */
+  public void draw(Graphics2D g2) {
+    Ellipse2D.Double fig = new Ellipse2D.Double(xPos, yPos, 32, 32);
+    g2.setColor(c);
+    g2.fill(fig);
+    g2.draw(fig);
+  }
 }

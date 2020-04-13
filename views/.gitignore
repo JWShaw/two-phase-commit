@@ -18,3 +18,10 @@
 /CtrlPanelView.class
 /Driver$1NewButtonListener.class
 /Driver$1SpinnerListener.class
+/SimulationController$1NewButtonListener.class
+/SimulationController$1SpinnerListener.class
+/StateEvent.class
+/StateListener.class
+/SimulationController$1StateChangeListener.class
+/SimulationController$1AddRMListener.class
+/SimulationController$1PrepareListener.class
