@@ -12,6 +12,7 @@ public class RMView {
   private int xPos;
   private int yPos;
   private Color c;
+  private String text;
 
   /**
    * Constructs a new RMView
@@ -20,16 +21,13 @@ public class RMView {
     xPos = 0;
     yPos = 0;
   }
-
+  
   /**
    * Constructs a new RMView
-   * 
-   * @param col The desired color of the new RMView
+   * @param s A 2-character string to display on the RM
    */
-  public RMView(Color col) {
-    c = col;
-    xPos = 0;
-    yPos = 0;
+  public RMView(String s) {
+    text = s;
   }
 
   /**
@@ -57,6 +55,7 @@ public class RMView {
     return yPos;
   }
 
+
   /**
    * Sets the color of the RMView
    * 
@@ -76,5 +75,10 @@ public class RMView {
     g2.setColor(c);
     g2.fill(fig);
     g2.draw(fig);
+    
+    if (text != null) {
+      g2.setColor(Color.WHITE);
+      g2.drawString(text, xPos + 7, yPos + 20);
+    }
   }
 }

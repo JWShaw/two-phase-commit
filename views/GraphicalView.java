@@ -3,6 +3,7 @@ package views;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.geom.Line2D;
 import java.util.ArrayList;
 import javax.swing.JPanel;
 
@@ -20,7 +21,7 @@ public class GraphicalView extends JPanel {
   public GraphicalView() {
     this.setBackground(Color.WHITE);
     rm_views = new ArrayList<>();
-    tm_view = new RMView();
+    tm_view = new RMView("TM");
   }
 
   /**
@@ -31,25 +32,41 @@ public class GraphicalView extends JPanel {
     Graphics2D g2 = (Graphics2D) g;
     super.paintComponent(g2);
 
-    // Draws the TM in the middle of its panel
+    // Sets TM position to middle of the panel
     tm_view.setPosition((getWidth() - tm_view.RADIUS) / 2, (getHeight() - tm_view.RADIUS) / 2);
-    tm_view.draw(g2);
+
 
     double theta = 2 * Math.PI / rm_views.size();
 
     // Draws the RMs in a circle around the TMView
     for (int i = 0; i < rm_views.size(); i++) {
-      rm_views.get(i).setPosition((int) ((tm_view.getXpos()) + getWidth() / 4 * Math.sin(i * theta)),
+      
+      // Defines the position of the RM on the frame
+      Position rmPos = new Position((int) ((tm_view.getXpos()) + getWidth() / 4 * Math.sin(i * theta)),
           (int) ((tm_view.getYpos()) - getHeight() / 4 * Math.cos(i * theta)));
+      
+      rm_views.get(i).setPosition(rmPos.x, rmPos.y);
+      
+      // Draws a line from TM to RM for visual clarity in their relationship
+      Line2D.Double connector = new Line2D.Double(rmPos.x + tm_view.RADIUS/2, rmPos.y + tm_view.RADIUS/2, 
+          getWidth()/2, getHeight()/2);
+      g2.setColor(Color.BLACK);
+      g2.draw(connector);
+      
+      // Draws the RM
       rm_views.get(i).draw(g2);
     }
+    
+    // Draws the TM last
+    tm_view.draw(g2);
   }
 
   /**
    * Adds a new depiction of an RM to the simulation
    */
   public void addRMView() {
-    rm_views.add(new RMView());
+    String label = String.format("%02d", rm_views.size());
+    rm_views.add(new RMView(label));
     repaint();
   }
 
@@ -89,4 +106,19 @@ public class GraphicalView extends JPanel {
     tm_view.setColor(Color.BLUE);
     repaint();
   }
+  
+  /**
+   * A tiny tuple class (x,y)-coordinate tuple class used locally to keep things clean.
+   */
+  class Position
+  {
+    int x;
+    int y;
+    Position(int x, int y)
+    {
+      this.x = x;
+      this.y = y;
+    }
+  }
+  
 }

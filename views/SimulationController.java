@@ -140,6 +140,9 @@ public class SimulationController {
       }
     }
     
+    /**
+     * Listener that changes the probability of RM failure
+     */
     class ProbChangeListener implements ChangeListener {
       @Override
       public void stateChanged(ChangeEvent e) {
