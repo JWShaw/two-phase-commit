@@ -10,14 +10,15 @@ import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.concurrent.LinkedBlockingQueue;
 
-import views.StateEvent;
-import views.StateListener;
+import controllers.MessageEvent;
+import controllers.RmListener;
+import controllers.StateEvent;
 
-public class TM implements Runnable {
+public class Tm implements Runnable {
   private PState st;
   private int port;
   private ServerSocket server;
-  private StateListener stl;
+  private RmListener listener;
 
   private ArrayList<ClientConnection> clients;
   private LinkedBlockingQueue<Message> msgQueue;
@@ -27,7 +28,7 @@ public class TM implements Runnable {
    * @param port The port number on which the TM process is listening
    * @throws IOException
    */
-  public TM(int port) throws IOException {
+  public Tm(int port) throws IOException {
     this.port = port;
     clients = new ArrayList<>();
     msgQueue = new LinkedBlockingQueue<>();
@@ -35,21 +36,8 @@ public class TM implements Runnable {
   }
 
   /**
-   * @return The port number on which the TM is listening
-   */
-  public int getPort() {
-    return port;
-  }
-
-  /**
-   * @return The current state of the TM
-   */
-  public PState getState() {
-    return st;
-  }
-
-  /**
    * Mimicks the TM process that would run on a node in the system.
+   * Once the system enters a Preparing state, it initiates two-phase commit.
    */
   @Override
   public void run() {
@@ -57,7 +45,7 @@ public class TM implements Runnable {
       // Connection-manager thread handles new incoming connections
       changeState(PState.WORKING);
       dispatchConnectionManager();
-
+  
       // If TM enters PREPARING state, initiate the two-phase commit algorithm
       while (true) {
         Thread.sleep(100);
@@ -77,30 +65,45 @@ public class TM implements Runnable {
   }
 
   /**
-   * Change the state of the TM
-   * 
-   * @param s The new state of the TM
+   * Add a state change listener so an outside observer can see state changes
+   * @param stl The state-change listener to be added
    */
-  private void changeState(PState s) {
-    PState oldState = st;
-    this.st = s;
-    fireStateEvent(oldState);
+  public void addRmListener(RmListener rmlistener) {
+    this.listener = rmlistener;
   }
 
   /**
-   * Broadcasts a message to every connected RM process
-   * 
-   * @param m The message to be sent to every RM process
-   * @throws IOException
+   * @return The port number on which the TM is listening
    */
-  private void broadcast(Message m) throws IOException {
-    for (ClientConnection c : clients) {
-      try {
-        Thread.sleep(500);
-      } catch (InterruptedException e) {
-        ;
+  public int getPort() {
+    return port;
+  }
+
+  /**
+   * @return The current state of the TM
+   */
+  public PState getState() {
+    return st;
+  }
+
+  // Tells the TM to enter a PREPARED state
+  public void prepare() {
+    if (st == PState.WORKING) {
+      changeState(PState.PREPARING);
+    }
+  }
+
+  /**
+   * Closes all connections, allowing for a new simulation to occur.
+   */
+  public void closeAllConnections() {
+    try {
+      for (ClientConnection c : clients) {
+        c.close();
       }
-      c.send(m);
+      server.close();
+    } catch (Exception e) {
+      // Do nothing, as nothing can be done.
     }
   }
 
@@ -126,17 +129,10 @@ public class TM implements Runnable {
     connectionManager.start();
   }
 
-  // Tells the TM to enter a PREPARED state
-  public void prepare() {
-    if (st == PState.WORKING) {
-      changeState(PState.PREPARING);
-    }
-  }
-
   // The actual two-phase commit algorithm for transaction consensus.
   private void twoPhaseCommit() throws IOException, InterruptedException {
     int preparedRMs = 0;
-
+  
     // Phase 1: Ask all the RMs to prepare
     broadcast(Message.PREPARE);
     while (preparedRMs < clients.size()) {
@@ -153,7 +149,7 @@ public class TM implements Runnable {
         ;
       }
     }
-
+  
     // Phase 2: Once ALL RMs have prepared, ask them to commit.
     if (preparedRMs == clients.size()) {
       changeState(PState.COMMITTED);
@@ -162,11 +158,28 @@ public class TM implements Runnable {
   }
 
   /**
-   * Add a state change listener so an outside observer can see state changes
-   * @param stl The state-change listener to be added
+   * Change the state of the TM
+   * 
+   * @param s The new state of the TM
    */
-  public void addStateListener(StateListener stl) {
-    this.stl = stl;
+  private void changeState(PState s) {
+    PState oldState = st;
+    this.st = s;
+    fireStateEvent(oldState);
+  }
+
+  /**
+   * Broadcasts a message to every connected RM process
+   * 
+   * @param m The message to be sent to every RM process
+   * @throws IOException
+   */
+  private void broadcast(Message m) throws IOException {
+    fireMessageEvent(m);
+    for (ClientConnection c : clients) {
+      pause();
+      c.send(m);
+    }
   }
 
   /**
@@ -175,20 +188,26 @@ public class TM implements Runnable {
    */
   private void fireStateEvent(PState oldState) {
     StateEvent ev = new StateEvent(this, st, oldState, -1);
-    stl.stateReceived(ev);
+    listener.stateReceived(ev);
+  }
+  
+  /**
+   * Triggers an event when a message is broadcast.
+   * @param msg The message being broadcast to all RMs.
+   */
+  private void fireMessageEvent(Message msg) {
+    MessageEvent mev = new MessageEvent(this, msg, -1);
+    listener.messageSent(mev);
   }
 
-  /**
-   * Closes all connections, allowing for a new simulation to occur.
+  /** 
+   *  Pauses the thread for a half second---used to slow down simulation.
    */
-  public void closeAllConnections() {
+  private void pause() {
     try {
-      for (ClientConnection c : clients) {
-        c.close();
-      }
-      server.close();
-    } catch (Exception e) {
-      ;
+      Thread.sleep(500);
+    } catch (InterruptedException e) {
+      // Can't make the thread sleep?  Do nothing; it's not the end of the world.
     }
   }
 
@@ -223,7 +242,7 @@ public class TM implements Runnable {
               Message m = (Message) ois.readObject();
               msgQueue.put(m);
             } catch (EOFException eof) {
-              ;
+              ; // Just try again if no message is available.
             } catch (SocketException se) {
               return;
             } catch (Exception e) {

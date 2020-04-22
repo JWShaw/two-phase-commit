@@ -7,7 +7,7 @@ import java.awt.geom.Ellipse2D;
 /**
  * A graphical representation of an RM (or TM) as a colored circle
  */
-public class RMView {
+public class RmView {
   final int RADIUS = 32;
   private int xPos;
   private int yPos;
@@ -17,7 +17,7 @@ public class RMView {
   /**
    * Constructs a new RMView
    */
-  public RMView() {
+  public RmView() {
     xPos = 0;
     yPos = 0;
   }
@@ -26,7 +26,8 @@ public class RMView {
    * Constructs a new RMView
    * @param s A 2-character string to display on the RM
    */
-  public RMView(String s) {
+  public RmView(String s) {
+    this();
     text = s;
   }
 

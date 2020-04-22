@@ -1,4 +1,4 @@
-package views;
+package controllers;
 
 import java.awt.Color;
 import java.awt.event.ActionEvent;
@@ -11,6 +11,8 @@ import javax.swing.event.ChangeListener;
 
 import models.PState;
 import models.Simulation;
+import views.CtrlPanelView;
+import views.GraphicalView;
 
 /**
  * The main controller class, which coordinates between the model (Simulation)
@@ -35,7 +37,7 @@ public class SimulationController {
     setUpListeners();
 
     try {
-      sim.addTM(5055);
+      sim.addTm(5055);
     } catch (IOException e) {
       e.printStackTrace();
     }
@@ -52,7 +54,8 @@ public class SimulationController {
     class NewButtonListener implements ActionListener {
       @Override
       public void actionPerformed(ActionEvent e) {
-        if (sim.getTM().getState() == PState.COMMITTED || sim.getTM().getState() == PState.ABORTED) {
+        if (sim.getTm().getState() == PState.COMMITTED || sim.getTm().getState() == PState.ABORTED) {
+          // Resets all views to their default state, and also resets the simulation
           gv.reset();
           cv.reset();
           try {
@@ -81,15 +84,14 @@ public class SimulationController {
     /**
      * The listener for the "Add RM" button
      */
-    class AddRMListener implements ActionListener {
+    class AddRmListener implements ActionListener {
       @Override
       public void actionPerformed(ActionEvent e) {
-        if (sim.getTM().getState() == PState.WORKING) {
+        if (sim.getTm().getState() == PState.WORKING) {
           try {
-            sim.addRM();
-            gv.addRMView();
+            sim.addRm();
+            gv.addRmView();
           } catch (UnknownHostException e1) {
-            // TODO Auto-generated catch block
             e1.printStackTrace();
           }
         }
@@ -97,49 +99,62 @@ public class SimulationController {
     }
 
     /**
-     * Listener, which dictates what happens when the TM or RMs change state.
+     * Listener, which dictates what happens when the TM or RMs change state
+     * or a message is sent between RMs/TM.
      */
-    class StateChangeListener implements StateListener {
+    class StateChangeListener implements RmListener {
       @Override
       public void stateReceived(StateEvent ste) {
         if (ste.id() == -1) {
-          gv.colorTMView(stateToColor(ste.newState()));
-          cv.logAppend(String.format("TM: %s%n", ste.newState()));
+          gv.colorTmView(stateToColor(ste.newState()));
+          if (ste.newState() == PState.WORKING) {
+            cv.logAppend(String.format("TM: %s%n", ste.newState()));
+          }
         } else {
-          gv.colorRMView(ste.id(), stateToColor(ste.newState()));
+          gv.colorRmView(ste.id(), stateToColor(ste.newState()));
           cv.logAppend(String.format("RM%d: %s%n", ste.id(), ste.newState()));
 
+          // Updates total number of RMs shown in each state on the control panel view
           switch (ste.oldState()) {
-          case WORKING:
-            cv.decrementWorkingCount();
-            break;
-          case PREPARED:
-            cv.decrementPreparedCount();
-            break;
-          default:
-            break;
+            case WORKING:
+              cv.decrementWorkingCount();
+              break;
+            case PREPARED:
+              cv.decrementPreparedCount();
+              break;
+            default:
+              break;
           }
 
           switch (ste.newState()) {
-          case WORKING:
-            cv.incrementWorkingCount();
-            break;
-          case PREPARED:
-            cv.incrementPreparedCount();
-            break;
-          case COMMITTED:
-            cv.incrementCommittedCount();
-            break;
-          case ABORTED:
-            cv.incrementAbortedCount();
-            break;
-          default:
-            break;
+            case WORKING:
+              cv.incrementWorkingCount();
+              break;
+            case PREPARED:
+              cv.incrementPreparedCount();
+              break;
+            case COMMITTED:
+              cv.incrementCommittedCount();
+              break;
+            case ABORTED:
+              cv.incrementAbortedCount();
+              break;
+            default:
+              break;
           }
         }
       }
+
+      @Override
+      public void messageSent(MessageEvent mev) {
+        if (mev.id() == -1) {
+          cv.logAppend(String.format("TM->ALL: %s%n", mev.message()));
+          /* To reduce clutter, only the TM broadcasts are printed in the log.
+           * RM -> TM messages were previously shown, but this didn't end up looking good. */
+        }
+      }
     }
-    
+
     /**
      * Listener that changes the probability of RM failure
      */
@@ -152,10 +167,10 @@ public class SimulationController {
 
     // Add appropriate listeners to each component
     cv.addNewButtonListener(new NewButtonListener());
-    cv.addAddRMButtonListener(new AddRMListener());
+    cv.addAddRmButtonListener(new AddRmListener());
     cv.addPrepareButtonListener(new PrepareListener());
     cv.addProbSpinnerChangeListener(new ProbChangeListener());
-    sim.addStateListener(new StateChangeListener());
+    sim.addRmListener(new StateChangeListener());
   }
 
   /**
@@ -166,20 +181,20 @@ public class SimulationController {
    */
   private Color stateToColor(PState st) {
     switch (st) {
-    case WORKING:
-      return Color.blue;
-    case PREPARED:
-      return Color.pink;
-    case COMMITTED:
-      return Color.green;
-    case ABORTED:
-      return Color.red;
-    case INITIALIZING:
-      return Color.cyan;
-    case PREPARING:
-      return Color.pink;
-    default:
-      return Color.black;
+      case WORKING:
+        return new Color(89, 145, 198);
+      case PREPARED:
+        return new Color(252, 195, 73);
+      case COMMITTED:
+        return new Color(67, 204, 71);
+      case ABORTED:
+        return new Color(204, 67, 67);
+      case INITIALIZING:
+        return Color.cyan;
+      case PREPARING:
+        return new Color(252, 195, 73);
+      default:
+        return Color.black;
     }
   }
 }

@@ -27,3 +27,6 @@
 /SimulationController$1PrepareListener.class
 /SimulationController$1ProbChangeListener.class
 /GraphicalView$Position.class
+/RMListener.class
+/MessageEvent.class
+/RmView.class

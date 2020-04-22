@@ -3,17 +3,18 @@ package models;
 import java.io.IOException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
-import views.StateListener;
+
+import controllers.RmListener;
 
 /**
  * The main model of the program, which represents a simulation of an execution
  * of the two-phase commit algorithm.
  */
 public class Simulation {
-  private ArrayList<RM> listofRMs;
-  private TM theManager;
-  private StateListener stl;
-  private int numRMs;
+  private ArrayList<Rm> rmList;
+  private Tm theManager;
+  private RmListener listener;
+  private int numRms;
   private double abortProb;
 
   /**
@@ -22,7 +23,7 @@ public class Simulation {
    * @throws IOException
    */
   public Simulation() throws IOException {
-    listofRMs = new ArrayList<>();
+    rmList = new ArrayList<>();
     abortProb = 0;
   }
 
@@ -31,14 +32,14 @@ public class Simulation {
    * 
    * @throws UnknownHostException
    */
-  public void addRM() throws UnknownHostException {
-    RM newRM = new RM(numRMs, theManager.getPort(), abortProb);
-    listofRMs.add(newRM);
-    if (stl != null) {
-      newRM.addStateListeneer(stl);
+  public void addRm() throws UnknownHostException {
+    Rm newRM = new Rm(numRms, theManager.getPort(), abortProb);
+    rmList.add(newRM);
+    if (listener != null) {
+      newRM.addRmListener(listener);
     }
-    numRMs++;
-    Thread t = new Thread(newRM, String.format("%d", numRMs - 1));
+    numRms++;
+    Thread t = new Thread(newRM, String.format("%d", numRms - 1));
     t.start();
   }
 
@@ -49,10 +50,10 @@ public class Simulation {
    * @param port The port on which the TM is listening
    * @throws IOException
    */
-  public void addTM(int port) throws IOException {
-    theManager = new TM(port);
-    if (stl != null) {
-      theManager.addStateListener(stl);
+  public void addTm(int port) throws IOException {
+    theManager = new Tm(port);
+    if (listener != null) {
+      theManager.addRmListener(listener);
     }
     Thread man = new Thread(theManager, "TM");
     man.start();
@@ -64,8 +65,8 @@ public class Simulation {
    * @param id The unique ID of the RM
    * @return The requested RM
    */
-  public RM getRM(int id) {
-    return listofRMs.get(id);
+  public Rm getRm(int id) {
+    return rmList.get(id);
   }
 
   /**
@@ -73,7 +74,7 @@ public class Simulation {
    * 
    * @return The TM for the simulation
    */
-  public TM getTM() {
+  public Tm getTm() {
     return theManager;
   }
   
@@ -84,7 +85,7 @@ public class Simulation {
   public void setAbortProb(double prob)
   {
     abortProb = prob;
-    for (RM r : listofRMs)
+    for (Rm r : rmList)
     {
       r.setAbortProb(abortProb);
     }
@@ -105,8 +106,8 @@ public class Simulation {
    * 
    * @param stl
    */
-  public void addStateListener(StateListener stl) {
-    this.stl = stl;
+  public void addRmListener(RmListener rmlistener) {
+    this.listener = rmlistener;
   }
 
   /**
@@ -116,8 +117,8 @@ public class Simulation {
    * @throws IOException
    */
   public void reset(int port) throws IOException {
-    addTM(port);
-    listofRMs = new ArrayList<>();
-    numRMs = 0;
+    addTm(port);
+    rmList = new ArrayList<>();
+    numRms = 0;
   }
 }

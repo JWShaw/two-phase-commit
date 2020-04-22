@@ -1,6 +1,10 @@
-package views;
+package controllers;
 
 import java.awt.EventQueue;
+
+import views.CtrlPanelView;
+import views.GraphicalView;
+import views.MainWindow;
 
 public class Driver {
   /**

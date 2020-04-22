@@ -22,13 +22,12 @@ import javax.swing.event.ChangeListener;
 @SuppressWarnings("serial")
 public class CtrlPanelView extends JPanel {
   private JButton btnNewButton;
-  private JButton btnAddRM;
+  private JButton btnAddRm;
   private JButton btnPrepare;
   private JTextPane workingCountPane;
   private JTextPane preparedCountPane;
   private JTextPane committedCountPane;
   private JTextPane abortedCountPane;
-  private JTextPane abortProbPane;
   private JTextArea logArea;
 
   private int workingCount;
@@ -61,13 +60,13 @@ public class CtrlPanelView extends JPanel {
     gbc_btnNewButton.gridy = 0;
     this.add(btnNewButton, gbc_btnNewButton);
 
-    btnAddRM = new JButton("Add RM");
+    btnAddRm = new JButton("Add RM");
     GridBagConstraints gbc_btnAddRM = new GridBagConstraints();
     gbc_btnAddRM.gridwidth = 2;
     gbc_btnAddRM.insets = new Insets(0, 0, 5, 0);
     gbc_btnAddRM.gridx = 0;
     gbc_btnAddRM.gridy = 1;
-    this.add(btnAddRM, gbc_btnAddRM);
+    this.add(btnAddRm, gbc_btnAddRM);
 
     btnPrepare = new JButton("Prepare");
     GridBagConstraints gbc_btnPrepare = new GridBagConstraints();
@@ -167,8 +166,8 @@ public class CtrlPanelView extends JPanel {
     this.add(horizontalStrut, gbc_horizontalStrut);
 
     JTextPane txtpnAbortProb = new JTextPane();
-    txtpnAbortProb
-        .setToolTipText("The probability that each node, when asked to commit, will instead abort the transaction.");
+    txtpnAbortProb.setToolTipText("The probability that each node,"
+        + " when asked to commit, will instead abort the transaction.");
     txtpnAbortProb.setText("p(Abort):");
     txtpnAbortProb.setBackground(SystemColor.window);
     GridBagConstraints gbc_txtpnAbortProb = new GridBagConstraints();
@@ -262,8 +261,8 @@ public class CtrlPanelView extends JPanel {
    * Adds an action listener to the "Add RM" button
    * @param al The action listener
    */
-  public void addAddRMButtonListener(ActionListener al) {
-    btnAddRM.addActionListener(al);
+  public void addAddRmButtonListener(ActionListener al) {
+    btnAddRm.addActionListener(al);
   }
 
   /**

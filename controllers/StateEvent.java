@@ -1,4 +1,4 @@
-package views;
+package controllers;
 
 import java.util.EventObject;
 import models.PState;
@@ -8,8 +8,8 @@ import models.PState;
  * An event which represents a change in state in an RM or TM
  */
 public class StateEvent extends EventObject {
-  private PState new_st;
-  private PState old_st;
+  private PState newState;
+  private PState oldState;
   private int id;
 
   /**
@@ -20,10 +20,10 @@ public class StateEvent extends EventObject {
    * @param oldState The previous state of the RM/TM
    * @param id       A unique identifier for the RM/TM
    */
-  public StateEvent(Object source, PState newState, PState oldState, int id) {
+  public StateEvent(Object source, PState new_state, PState old, int id) {
     super(source);
-    new_st = newState;
-    old_st = oldState;
+    newState = new_state;
+    oldState = old;
     this.id = id;
   }
 
@@ -31,14 +31,14 @@ public class StateEvent extends EventObject {
    * @return The present state of the source RM/TM
    */
   public PState newState() {
-    return new_st;
+    return newState;
   }
 
   /**
    * @return The previous state of the source RM/TM
    */
   public PState oldState() {
-    return old_st;
+    return oldState;
   }
 
   /**

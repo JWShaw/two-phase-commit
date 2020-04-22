@@ -1,7 +1,5 @@
 package models;
 
-import views.StateEvent;
-import views.StateListener;
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -11,11 +9,15 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.Random;
 
-public class RM implements Runnable {
+import controllers.MessageEvent;
+import controllers.RmListener;
+import controllers.StateEvent;
+
+public class Rm implements Runnable {
   private InetAddress host;
   private int id;
   private PState st;
-  private StateListener listener;
+  private RmListener listener;
   private double abortProb;
 
   private int destinationPort;
@@ -29,7 +31,7 @@ public class RM implements Runnable {
    * @param id  Identification number
    * @param The port on which the TM is listening
    */
-  public RM(int id, int port, double abortProb) throws UnknownHostException {
+  public Rm(int id, int port, double abortProb) throws UnknownHostException {
     this.id = id;
     this.destinationPort = port;
     this.abortProb = abortProb;
@@ -39,27 +41,28 @@ public class RM implements Runnable {
   }
 
   /**
-   * Mimicks the RM process that would run on a typical node
+   * Mimicks the RM process that would run on a typical node.
+   * Reads incoming messages and changes state accordingly.
    */
   public void run() {
     try {
       sock = new Socket(host.getHostName(), destinationPort);
       oos = new ObjectOutputStream(sock.getOutputStream());
       ois = new ObjectInputStream(sock.getInputStream());
-
+  
       changeState(PState.WORKING);
-
+  
       // Continues to poll for new messages while not COMMITTED or ABORTED
       while (st == PState.WORKING || st == PState.PREPARED) {
         Message m = null;
         try {
           m = (Message) ois.readObject();
         } catch (EOFException eofe) {
-          ;
+          ; // No message available?  That's okay; try again.
         } catch (ClassNotFoundException cnfe) {
-          ;
+          cnfe.printStackTrace();
         }
-
+  
         // When a message is recieved, the RM responds appropriately
         if (m == Message.PREPARE)
           prepare();
@@ -77,30 +80,22 @@ public class RM implements Runnable {
   }
 
   /**
-   * Internal method to change the RM state.
+   * Adds a state-change listener for the RM so state changes can be observed from
+   * outside
    * 
-   * @param s The new RM state
+   * @param l The listener to be added
    */
-  private void changeState(PState s) {
-    PState oldState = st;
-    this.st = s;
-    fireStateEvent(oldState);
+  public void addRmListener(RmListener l) {
+    listener = l;
   }
 
   /**
-   * Sends a message to the TM
-   * 
-   * @param m The message to be sent to the TM
-   * @throws IOException
+   * Sets the probability that the RM will, when asked to prepare, instead abort.
+   * @param prob The aforementioned probability
    */
-  private void sendMessage(Message m) throws IOException {
-    try {
-      Thread.sleep(1000);
-    } catch (InterruptedException e) {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
-    }
-    oos.writeObject(m);
+  public void setAbortProb(double prob)
+  {
+    abortProb = prob;
   }
 
   /**
@@ -124,6 +119,19 @@ public class RM implements Runnable {
   }
 
   /**
+   * Closes socket and streams.
+   */
+  public void closeAllConnections() {
+    try {
+      oos.close();
+      ois.close();
+      sock.close();
+    } catch (Exception e) {
+      // Do nothing, as nothing can be done.
+    }
+  }
+
+  /**
    * Places the RM in a COMMITTED state when appropriate.
    * 
    * @throws IOException
@@ -141,28 +149,33 @@ public class RM implements Runnable {
    * 
    * @throws IOException
    */
-  public void abort() throws IOException {
+  private void abort() throws IOException {
     changeState(PState.ABORTED);
     sendMessage(Message.ABORTED);
   }
 
   /**
-   * Adds a state-change listener for the RM so state changes can be observed from
-   * outside
+   * Internal method to change the RM state.
    * 
-   * @param l The listener to be added
+   * @param s The new RM state
    */
-  public void addStateListeneer(StateListener l) {
-    listener = l;
+  private void changeState(PState s) {
+    PState oldState = st;
+    this.st = s;
+    fireStateEvent(oldState);
   }
-  
+
   /**
-   * Sets the probability that the RM will, when asked to prepare, instead abort.
-   * @param prob The aforementioned probability
+   * Sends a message to the TM
+   * 
+   * @param m The message to be sent to the TM
+   * @throws IOException
    */
-  public void setAbortProb(double prob)
-  {
-    abortProb = prob;
+  private void sendMessage(Message m) throws IOException {
+    pause();
+    // fireMessageEvent(m); // Not being used in this iteration of the program.
+    pause();
+    oos.writeObject(m);
   }
 
   /**
@@ -174,17 +187,25 @@ public class RM implements Runnable {
     StateEvent ev = new StateEvent(this, st, oldState, id);
     listener.stateReceived(ev);
   }
-
+  
   /**
-   * Closes socket and streams.
+   * Triggers an event when a message sent to the TM.
+   * Not being used in this iteration of the program, but kept for future use.
+   * @param msg The message being broadcast to all RMs.
    */
-  public void closeAllConnections() {
+  private void fireMessageEvent(Message msg) {
+    MessageEvent mev = new MessageEvent(this, msg, id);
+    listener.messageSent(mev);
+  }
+
+  /** 
+   *  Pauses the thread for a half second---used to slow down simulation.
+   */
+  private void pause() {
     try {
-      oos.close();
-      ois.close();
-      sock.close();
-    } catch (Exception e) {
-      ;
+      Thread.sleep(500);
+    } catch (InterruptedException e) {
+      // Can't make the thread sleep?  Oh well.  Do nothing.
     }
   }
 }
