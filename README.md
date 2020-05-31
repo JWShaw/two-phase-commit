@@ -1,4 +1,4 @@
-Two Phase Commit Simulator
+# Two Phase Commit Simulator
 
 This is a Java multithreaded application I built for Dr. Aravind's class "CPSC 441: Distributed Systems" at University of Northern British Columbia.  Its purpose is to provide an interactive, visual representation of the two-phase commit algorithm for transaction consensus. 
 
@@ -46,4 +46,4 @@ The log area at the bottom left of the window keeps a real-time list of the even
 
 After a simulation has completed and all nodes are either **Committed** or **Aborted**, the user can press the *New Simulation* button to return to a blank slate with only a Transaction Manager process present.  In this manner, one can change variables and repeat simulations as many times as one desires.  Please note that the log area is cleared during a reset; any log data present will be lost if it is not copied to an external file.
 
-![Screen Shot 2020-04-21 at 22.49.24.png](../../_resources/b1a7b82a1128483e8cf5f39f705cb6d2.png)
+![Screen Shot 2020-04-21 at 22.49.24.png](./_resources/b1a7b82a1128483e8cf5f39f705cb6d2.png)
