@@ -16,8 +16,8 @@ public class StateEvent extends EventObject {
    * Creates a new state event
    * 
    * @param source   The RM/TM at which the event was created
-   * @param newState The new (current) state of the RM/TM
-   * @param oldState The previous state of the RM/TM
+   * @param new_state The new (current) state of the RM/TM
+   * @param old The previous state of the RM/TM
    * @param id       A unique identifier for the RM/TM
    */
   public StateEvent(Object source, PState new_state, PState old, int id) {

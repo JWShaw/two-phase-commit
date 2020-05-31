@@ -104,7 +104,7 @@ public class Simulation {
   /**
    * Adds a state-change listener to this simulation.
    * 
-   * @param stl
+   * @param rmlistener The listener to add to each RM (and the TM)
    */
   public void addRmListener(RmListener rmlistener) {
     this.listener = rmlistener;

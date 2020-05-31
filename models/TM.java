@@ -37,7 +37,6 @@ public class Tm implements Runnable {
 
   /**
    * Mimicks the TM process that would run on a node in the system.
-   * Once the system enters a Preparing state, it initiates two-phase commit.
    */
   @Override
   public void run() {
@@ -66,7 +65,7 @@ public class Tm implements Runnable {
 
   /**
    * Add a state change listener so an outside observer can see state changes
-   * @param rmlistener The state-change listener to be added
+   * @param stl The state-change listener to be added
    */
   public void addRmListener(RmListener rmlistener) {
     this.listener = rmlistener;

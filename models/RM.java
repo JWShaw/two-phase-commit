@@ -41,8 +41,7 @@ public class Rm implements Runnable {
   }
 
   /**
-   * Mimicks the RM process that would run on a typical node.
-   * Reads incoming messages and changes state accordingly.
+   * Mimicks the RM process that would run on a typical node
    */
   public void run() {
     try {
@@ -193,7 +192,6 @@ public class Rm implements Runnable {
    * Not being used in this iteration of the program, but kept for future use.
    * @param msg The message being broadcast to all RMs.
    */
-  @SuppressWarnings("unused")
   private void fireMessageEvent(Message msg) {
     MessageEvent mev = new MessageEvent(this, msg, id);
     listener.messageSent(mev);
