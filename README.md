@@ -4,7 +4,7 @@ This is a Java multithreaded application I built for Dr. Aravind's class "CPSC 4
 
 The processes in the simulated distributed system run on their own threads and communicate with one another solely through message-passing.  The system is visualized as an undirected, connected graph.
 
-## Running/Compiling
+### Running/Compiling
 
 A `.jar` file is included and should be used to test the program.  An ant build script (`build.xml`) is also included.
 
