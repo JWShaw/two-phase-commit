@@ -4,7 +4,10 @@ This is a Java multithreaded application I built for Dr. Aravind's class "CPSC 4
 
 The processes in the simulated distributed system run on their own threads and communicate with one another solely through message-passing.  The system is visualized as an undirected, connected graph.
 
-My presentation video for the project can be found [here](https://youtu.be/wIVPOuC_uBA).
+The reports and presentation accompanying this project can be found at the following links:
+* [Problem Statement]
+* [Solution Statement]
+* [Final Project Presentation](https://youtu.be/wIVPOuC_uBA)
 
 ### Running/Compiling
 
