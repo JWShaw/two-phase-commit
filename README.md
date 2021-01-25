@@ -1,5 +1,7 @@
 # Two Phase Commit Simulator
 
+Note: I am working on a JavaFX Port, as I wish to improve the code quality of this project.
+
 This is a Java multithreaded application I built for Dr. Aravind's class "CPSC 441: Distributed Systems" at University of Northern British Columbia.  Its purpose is to provide an interactive, visual representation of the two-phase commit algorithm for transaction consensus. 
 
 The processes in the simulated distributed system run on their own threads and communicate with one another solely through message-passing.  The system is visualized as an undirected, connected graph.
