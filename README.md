@@ -1,6 +1,6 @@
 # Two Phase Commit Simulator
 
-Note: I am working on a JavaFX Port, as I wish to improve the code quality of this project.
+03/23/2023: Just for fun, and as a measure of how I've developed as a programmer, I have started a [rewrite of this project](https://github.com/JWShaw/two-phase-commit-rewrite) using Kotlin coroutines!
 
 This is a Java multithreaded application I built for Dr. Aravind's class "CPSC 441: Distributed Systems" at University of Northern British Columbia.  Its purpose is to provide an interactive, visual representation of the two-phase commit algorithm for transaction consensus. 
 
